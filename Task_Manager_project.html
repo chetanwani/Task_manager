@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Task Manager</title>
+	<style>
+		table {
+			border-collapse: collapse;
+			width: 100%;
+		}
+		th, td {
+			text-align: left;
+			padding: 8px;
+			border-bottom: 1px solid #ddd;
+		}
+		tr:hover {
+			background-color: #f5f5f5;
+		}
+		form {
+			display: flex;
+			flex-direction: column;
+			width: 50%;
+			margin-bottom: 20px;
+		}
+		input, select {
+			margin-bottom: 10px;
+			padding: 5px;
+			border: 1px solid #ccc;
+			border-radius: 5px;
+		}
+		input[type="submit"] {
+			background-color: #4CAF50;
+			color: white;
+			cursor: pointer;
+		}
+		input[type="submit"]:hover {
+			background-color: #45a049;
+		}
+	</style>
+</head>
+<body>
+	<h1>Task Manager</h1>
+	
+	<form id="task-form">
+		<label for="task-name">Task Name:</label>
+		<input type="text" id="task-name" name="task-name" required>
+		
+		<label for="due-date">Due Date:</label>
+		<input type="date" id="due-date" name="due-date" required>
+		
+		<label for="status">Status:</label>
+		<select id="status" name="status">
+			<option value="pending" selected>Pending</option>
+			<option value="completed">Completed</option>
+		</select>
+		
+		<input type="submit" value="Add Task">
+	</form>
+	
+	<label for="filter-name">Filter by Name:</label>
+	<input type="text" id="filter-name" name="filter-name">
+	
+	<label for="filter-status">Filter by Status:</label>
+	<select id="filter-status" name="filter-status">
+		<option value="all" selected>All</option>
+		<option value="pending">Pending</option>
+		<option value="completed">Completed</option>
+	</select>
+	
+	<label for="sort-by">Sort by:</label>
+	<select id="sort-by" name="sort-by">
+		<option value="due-date-asc" selected>Due Date (Ascending)</option>
+		<option value="due-date-desc">Due Date (Descending)</option>
+		<option value="name-asc">Name (Ascending)</option>
+		<option value="name-desc">Name (Descending)</option>
+	</select>
+	
+	<table id="task-table">
+		<thead>
+			<tr>
+				<th>Task Name</th>
+				<th>Due Date</th>
+				<th>Status</th>
+				<th>Action</th>
+			</tr>
+		</thead>
+		<tbody>
+			<!-- Task rows will be added dynamically using JavaScript -->
+		</tbody>
+	</table>
+	
+	<script>// Initialize an array to store tasks
+		let tasks = [];
+		
+		// Get references to HTML elements
+		const taskForm = document.getElementById('task-form');
+		const taskTable = document.getElementById('task-table');
+		const filterName = document.getElementById('filter-name');
+		const filterStatus = document.getElementById('filter-status');
+		const sortBy = document.getElementById('sort-by');
+		
+		// Add event listener to task form
+		taskForm.addEventListener('submit', addTask);
+		
+		// Initialize task table
+		initTaskTable();
+		
+		function addTask(event) {
+			// Prevent the form from submitting and reloading the page
+			event.preventDefault();
+			
+			// Get form data and create a new task object
+			const taskName = document.getElementById('task-name').value;
+			const dueDate = document.getElementById('due-date').value;
+			const status = document.getElementById('status').value;
+			const task = { name: taskName, dueDate: dueDate, status: status };
+			
+			// Add the new task to the tasks array
+			tasks.push(task);
+			
+			// Update the task table
+			updateTaskTable();
+			
+			// Clear the task form
+			taskForm.reset();
+		}
+		
+		function initTaskTable() {
+			// Create table rows for each task and add them to the task table
+			tasks.forEach(task => {
+				addTaskRow(task);
+			});
+		}
+		
+		function updateTaskTable() {
+			// Clear all rows from the task table
+			taskTable.querySelectorAll('tr').forEach(row => row.remove());
+			
+			// Filter tasks based on name and status criteria
+			const filteredTasks = tasks.filter(task => {
+				const nameFilter = filterName.value.trim().toLowerCase();
+				const statusFilter = filterStatus.value;
+				return (nameFilter === '' || task.name.toLowerCase().includes(nameFilter)) &&
+					   (statusFilter === 'all' || task.status === statusFilter);
+			});
+			
+			// Sort tasks based on selected sort criteria
+			const sortOption = sortBy.value;
+			filteredTasks.sort((task1, task2) => {
+				if (sortOption === 'due-date-asc') {
+					return new Date(task1.dueDate) - new Date(task2.dueDate);
+				} else if (sortOption === 'due-date-desc') {
+					return new Date(task2.dueDate) - new Date(task1.dueDate);
+				} else if (sortOption === 'name-asc') {
+					return task1.name.localeCompare(task2.name);
+				} else {
+					return task2.name.localeCompare(task1.name);
+				}
+			});
+			
+			// Add table rows for each filtered and sorted task
+			filteredTasks.forEach(task => {
+				addTaskRow(task);
+			});
+		}
+		
+		function addTaskRow(task) {
+			// Create a new table row and cells for each task property
+			const row = taskTable.insertRow();
+			const nameCell = row.insertCell();
+			const dueDateCell = row.insertCell();
+			const statusCell = row.insertCell();
+			const actionCell = row.insertCell();
+			
+			// Populate the table cells with task data
+			nameCell.textContent = task.name;
+			dueDateCell.textContent = task.dueDate;
+			statusCell.textContent = task.status;
+			
+			// Create a button to change task status and add it to the action cell
+			const statusButton = document.createElement('button');
+			statusButton.textContent = (task.status === 'pending') ? 'Mark as Completed' : 'Mark as Pending';
+			statusButton.addEventListener('click', () => {
+				task.status = (task.status === 'pending') ? 'completed' : 'pending';
+				updateTaskTable();
+			});
+			actionCell
+		</script>
+</body>
+</html>
